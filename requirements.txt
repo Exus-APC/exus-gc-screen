@@ -1,0 +1,7 @@
+# substation_screen.py uses the Python 3 standard library only
+# (argparse, json, urllib) — no third-party packages required to run the screen.
+#
+# Optional, only if you extend the repo to also GENERATE deliverables locally:
+#   python-docx      # Exus .docx feasibility report
+#   weasyprint       # HTML -> A4 PDF one-pager
+#   Pillow           # image handling for the one-pager graphics
