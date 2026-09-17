@@ -13,7 +13,7 @@
 ## Conventions
 - Deliverable ref: `EXR-GC-YYYY-<SITE>` (e.g. `EXR-GC-2026-HARMIRE`).
 - Site chat title: `GC Screen — <Site> (EXR-GC-YYYY-<SITE>)`.
-- Files: `<REF>_Viability_Screen_R0.pdf/.html`, `<REF>_Connection_Appraisal_R0.docx`.
+- Files: `<REF>_Viability_Screen_R0.pdf/.html`, `<REF>_Feasibility_Report_R0.docx`.
 
 ## Data sources
 - **GridDataUK** (griddata.uk) — fast consolidated visual (hierarchy, queue, fault, make/break); login for numeric fields.
