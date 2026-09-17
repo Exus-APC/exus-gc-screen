@@ -13,10 +13,12 @@ environment and in Power Automate.
 ## Quick start
 
 ```bash
-python3 substation_screen.py "Harmire Bridge" --target-mw 5
-python3 substation_screen.py "Harmire Bridge" --debug     # confirm dataset field names (first live run)
-python3 substation_screen.py --self-test                  # offline rubric check, no network
-python3 substation_screen.py "Harmire Bridge" --json harmire.json
+python3 substation_screen.py "Harmire Bridge" --dno npg  --target-mw 5
+python3 substation_screen.py "East Hertford"  --dno ukpn --target-mw 10
+python3 substation_screen.py --dno enwl --list-datasets      # discover dataset ids for a DNO
+python3 substation_screen.py "Some Primary" --dno spen --debug   # show chosen dataset + raw fields
+python3 substation_screen.py --self-test                     # offline rubric + discovery check
+python3 substation_screen.py "Harmire Bridge" --dno npg --json harmire.json
 ```
 
 No install needed — standard library only (Python 3.9+).
@@ -29,27 +31,37 @@ No install needed — standard library only (Python 3.9+).
 | **CONDITIONAL** | firm gen < target, but a live route exists: non-firm/ANM, demand-led/BESS on demand headroom, or sub-5 MW CMP446 | One-page screen (HTML + A4 PDF) + flag the route |
 | **CONSTRAINED** | firm gen ≈ 0 or fully allocated to a consented queue, no route within target | One-page screen (HTML + A4 PDF) |
 
-## Data source
+## DNO coverage
 
-Uses the **Northern Powergrid** Opendatasoft Explore API v2.1 (free, no auth):
-`heatmapsubstationareas`, `substation_sites_list`, `gsp-appendix-g-information`, and the
-Embedded Capacity Register. These carry the same figures GridDataUK shows behind its login
-(origin: NPg LTDS Appendix 5). GridDataUK remains the fast visual layer.
+| `--dno` | Operator | Platform | Live query |
+|---|---|---|---|
+| `npg`  | Northern Powergrid | Opendatasoft | ✅ |
+| `ukpn` | UK Power Networks | Opendatasoft | ✅ |
+| `spen` | SP Energy Networks | Opendatasoft | ✅ |
+| `enwl` | Electricity North West | Opendatasoft | ✅ |
+| `nged` | National Grid Electricity Distribution | CKAN | ⚠️ documented (use portal / add resource id) |
+| `ssen` | Scottish & Southern (SSEN) | CKAN | ⚠️ documented (use portal / add resource id) |
 
-> All figures are **indicative** — verify with the DNO before any connection decision.
+The four Opendatasoft operators share the same Explore API v2.1, so one code path screens
+all of them — you only change `--dno`. NGED and SSEN publish via CKAN portals with a
+different API; they are documented in `docs/METHODOLOGY.md` and return a guided message
+rather than a silent failure. To wire one fully, find its resource with
+`--dno <nged|ssen> --list-datasets` and add the id.
 
-## First-run field mapping (important)
+## Dataset discovery (first live run)
 
-DNOs rename dataset columns between refreshes. Field extraction is deliberately fuzzy
-(substring match, see `FIELDS` in the script), but on the **first live run** use `--debug`
-to dump the raw record and confirm the column names resolve. Adjust the `FIELDS`
-fragments if a value comes back `None`.
+Dataset ids differ between operators and change between refreshes, so the tool
+**auto-discovers** the substation heatmap dataset by searching the portal's catalogue
+(keyword-scored, see `DISCOVER_KEYWORDS`). To confirm the choice:
 
-## Extending to other DNOs
+```bash
+python3 substation_screen.py --dno ukpn --list-datasets      # list candidates
+python3 substation_screen.py "X Primary" --dno ukpn --debug  # show chosen dataset + raw record
+```
 
-The tool is NPg-only today. Add other operators to `DNO_ENDPOINTS` with their base URL and
-dataset ids (NGED, SSEN, SPEN and ENWL all publish equivalent Connected-Data / Opendatasoft
-portals), then call with `--dno <key>`.
+Once confirmed, hard-set it to skip discovery next time:
+`DNO_ENDPOINTS["ukpn"]["dataset"] = "<dataset-id>"`.
+If a value comes back `None`, adjust the fuzzy `FIELDS` fragments for that operator's columns.
 
 ## Power Automate / PowerBI
 
@@ -60,5 +72,5 @@ point PowerBI at that table for a scheduled portfolio sweep.
 ## Files
 
 - `substation_screen.py` — the tool
-- `docs/METHODOLOGY.md` — the screening method & rubric (mirror of the Project hub)
+- `docs/METHODOLOGY.md` — the screening method, rubric & GB DNO data-source table
 - `docs/project_instructions.md` — paste-ready text for the Claude Project instructions field
